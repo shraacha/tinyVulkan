@@ -5,7 +5,7 @@
 #include <stdexcept>
 
 int main() {
-    tv::FirstApp app{};
+    tv::FirstApp app;
 
     try {
       app.run();

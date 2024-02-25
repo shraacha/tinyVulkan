@@ -15,7 +15,6 @@ typedef std::unique_ptr<GLFWwindow, DestroyGLFWwin> smart_GLFWwindow_ptr;
 namespace tv {
 
 class TvWindow {
-
 public:
   TvWindow(int w, int h, std::string name);
 

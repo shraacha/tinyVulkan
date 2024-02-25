@@ -3,6 +3,7 @@
 #include "tv_window.hpp"
 
 namespace tv {
+
 class FirstApp {
 public:
   static constexpr int WIDTH = 800;

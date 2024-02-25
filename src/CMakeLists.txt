@@ -11,6 +11,8 @@ set(VK_ICD_FILENAMES ${VK_LOCATION}/macOS/share/vulkan/icd.d/MoltenVK_icd.json)
 set(VK_LAYER_PATH ${VK_LOCATION}/macOS/share/vulkan/explicit_layer.d)
 
 # *IMPORTANT* run this before the app
+# actually... just run
+# `source /Users/anish/VulkanSDK/1.3.275.0/setup-env.sh`
 configure_file(EnvironmentVars.sh.in EnvironmentVars.sh)
 
 # glm
@@ -35,36 +37,33 @@ else()
   message(FATAL_ERROR "no glfw3 :(")
 endif()
 
-# vulkan lib base (1)
-find_library(vulkan_LIB_BASE
-  NAMES vulkan.1
-  HINTS ${VK_LOCATION}/macOS/lib)
+# vulkan & glsl stuff
+find_package(Vulkan REQUIRED)
 
-if(vulkan_LIB_BASE)
-  message(STATUS "vulkan base ver found!")
+if (${Vulkan_FOUND})
+  message(STATUS "vulkan found!")
 else()
-  message(FATAL_ERROR "no vulkan base ver :(")
+  message(FATAL_ERROR "no vulkan found :(")
 endif()
 
-# vulkan lib versioned
-find_library(vulkan_LIB_VERSIONED
-  NAMES vulkan.1.3.275
-  HINTS ${VK_LOCATION}/macOS/lib)
-
-if(vulkan_LIB_VERSIONED)
-  message(STATUS "vulkan versioned found!")
+if (${Vulkan_glslangValidator_FOUND})
+  message(STATUS "glslangValidator found!")
 else()
-  message(FATAL_ERROR "no vulkan versioned :(")
+  message(FATAL_ERROR "no glslangValidator found :(")
 endif()
 
-set(LIBS ${glm_LIB} ${glfw3_LIB} ${vulkan_LIB_BASE} ${vulkan_LIB_VERSIONED})
+if (${Vulkan_glslc_FOUND})
+  message(STATUS "glslc found!")
+else()
+  message(FATAL_ERROR "no glslc found :(")
+endif()
 
-set(INCLUDES /opt/homebrew/include ${VK_LOCATION}/macOS/include)
+set(LIBS ${glm_LIB} ${glfw3_LIB} ${Vulkan_LIBRARY} ${Vulkan_glslang_LIBRARY})
 
+set(INCLUDES /opt/homebrew/include ${Vulkan_INCLUDE_DIR})
 
 
 # our project
-
 project(TinyVulkan)
 
 # vars
@@ -72,11 +71,41 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# glsl compilation
+file(GLOB_RECURSE GLSL_SOURCE_FILES
+    "shaders/*.frag"
+    "shaders/*.vert"
+    )
+
+foreach(GLSL ${GLSL_SOURCE_FILES})
+  get_filename_component(FILE_NAME ${GLSL} NAME)
+  set(SPIRV "${PROJECT_BINARY_DIR}/shaders/${FILE_NAME}.spv")
+  add_custom_command(
+    OUTPUT ${SPIRV}
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}/shaders/"
+    COMMAND ${Vulkan_GLSLC_EXECUTABLE} ${GLSL} -o ${SPIRV}
+    DEPENDS ${GLSL})
+  list(APPEND SPIRV_BINARY_FILES ${SPIRV})
+endforeach(GLSL)
+
+add_custom_target(
+    Shaders
+    DEPENDS ${SPIRV_BINARY_FILES}
+    )
+
+# add_custom_command(TARGET YourMainTarget POST_BUILD
+#     COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:TinyVulkan>/shaders/"
+#     COMMAND ${CMAKE_COMMAND} -E copy_directory
+#         "${PROJECT_BINARY_DIR}/shaders"
+#         "$<TARGET_FILE_DIR:TinyVulkan>/shaders"
+#         )
+
 # local
 # execs and local libs
 add_library(Tv_Window tv_window.cpp)
 add_library(First_App first_app.cpp)
 add_executable(TinyVulkan main.cpp)
+add_dependencies(TinyVulkan Shaders)
 
 # include
 target_include_directories(Tv_Window PUBLIC ${INCLUDES})
