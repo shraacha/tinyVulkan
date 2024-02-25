@@ -1,20 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 
-
-
-# external libraries and ENV vars
-# TODO make platform agnostic
-set(VK_LOCATION /Users/anish/VulkanSDK/1.3.275.0)
-
-# env vars
-set(VK_ICD_FILENAMES ${VK_LOCATION}/macOS/share/vulkan/icd.d/MoltenVK_icd.json)
-set(VK_LAYER_PATH ${VK_LOCATION}/macOS/share/vulkan/explicit_layer.d)
-
-# *IMPORTANT* run this before the app
-# actually... just run
+# *IMPORTANT* run this before compiling / running app
 # `source /Users/anish/VulkanSDK/1.3.275.0/setup-env.sh`
-configure_file(EnvironmentVars.sh.in EnvironmentVars.sh)
 
+# ~~ external libraries ~~
 # glm
 find_library(glm_LIB
   NAMES glm
@@ -63,7 +52,7 @@ set(LIBS ${glm_LIB} ${glfw3_LIB} ${Vulkan_LIBRARY} ${Vulkan_glslang_LIBRARY})
 set(INCLUDES /opt/homebrew/include ${Vulkan_INCLUDE_DIR})
 
 
-# our project
+# ~~ our project ~~
 project(TinyVulkan)
 
 # vars
@@ -100,6 +89,8 @@ add_custom_target(
 #         "$<TARGET_FILE_DIR:TinyVulkan>/shaders"
 #         )
 
+
+# ~~ adding deps and stuff ~~
 # local
 # execs and local libs
 add_library(Tv_Window tv_window.cpp)
@@ -107,11 +98,11 @@ add_library(First_App first_app.cpp)
 add_executable(TinyVulkan main.cpp)
 add_dependencies(TinyVulkan Shaders)
 
-# include
+# ~~ include ~~
 target_include_directories(Tv_Window PUBLIC ${INCLUDES})
 target_include_directories(First_App PUBLIC ${INCLUDES})
 
-# linking
+# ~~ linking ~~
 target_link_libraries(TinyVulkan
   PUBLIC Tv_Window
   PUBLIC First_App)
