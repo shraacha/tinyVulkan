@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # *IMPORTANT* run this before compiling / running app
-# `source /Users/anish/VulkanSDK/1.3.275.0/setup-env.sh`
+# `source ~/VulkanSDK/1.3.275.0/setup-env.sh`
 
 # ~~ external libraries ~~
 # glm
@@ -94,19 +94,23 @@ add_custom_target(
 # local
 # execs and local libs
 add_library(Tv_Window tv_window.cpp)
+add_library(Tv_Pipeline tv_pipeline.cpp)
 add_library(First_App first_app.cpp)
 add_executable(TinyVulkan main.cpp)
 add_dependencies(TinyVulkan Shaders)
 
 # ~~ include ~~
 target_include_directories(Tv_Window PUBLIC ${INCLUDES})
+target_include_directories(Tv_Pipeline PUBLIC ${INCLUDES})
 target_include_directories(First_App PUBLIC ${INCLUDES})
 
 # ~~ linking ~~
 target_link_libraries(TinyVulkan
   PUBLIC Tv_Window
+  PUBLIC Tv_Pipeline
   PUBLIC First_App)
 
 # TODO separate this out into subdirs
 target_link_libraries(Tv_Window ${LIBS})
+target_link_libraries(Tv_Pipeline ${LIBS})
 target_link_libraries(First_App ${LIBS})
