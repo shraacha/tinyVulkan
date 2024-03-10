@@ -84,7 +84,7 @@ void TvDevice::createInstance() {
   createInfo.pApplicationInfo = &appInfo;
 
   // ~~ macos required ~~ TODO wrap with ifdef
-  createInfo.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+  createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 
   auto extensions = getRequiredExtensions();
   createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
