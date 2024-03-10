@@ -95,22 +95,26 @@ add_custom_target(
 # execs and local libs
 add_library(Tv_Window tv_window.cpp)
 add_library(Tv_Pipeline tv_pipeline.cpp)
+add_library(Tv_Device tv_device.cpp)
 add_library(First_App first_app.cpp)
 add_executable(TinyVulkan main.cpp)
 add_dependencies(TinyVulkan Shaders)
 
 # ~~ include ~~
 target_include_directories(Tv_Window PUBLIC ${INCLUDES})
+target_include_directories(Tv_Device PUBLIC ${INCLUDES})
 target_include_directories(Tv_Pipeline PUBLIC ${INCLUDES})
 target_include_directories(First_App PUBLIC ${INCLUDES})
 
 # ~~ linking ~~
 target_link_libraries(TinyVulkan
   PUBLIC Tv_Window
+  PUBLIC Tv_Device
   PUBLIC Tv_Pipeline
   PUBLIC First_App)
 
 # TODO separate this out into subdirs
 target_link_libraries(Tv_Window ${LIBS})
-target_link_libraries(Tv_Pipeline ${LIBS})
+target_link_libraries(Tv_Device ${LIBS})
+target_link_libraries(Tv_Pipeline PUBLIC ${LIBS})
 target_link_libraries(First_App ${LIBS})

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "tv_device.hpp"
 #include "tv_pipeline.hpp"
 #include "tv_window.hpp"
 
@@ -14,8 +15,10 @@ public:
 
 private:
   TvWindow tvWindow{WIDTH, HEIGHT, "Hello Vulkan!"};
-  TvPipeline tvPipeline{"shaders/simple_shader.vert.spv",
-                        "shaders/simple_shader.frag.spv"};
+  TvDevice tvDevice{tvWindow};
+  TvPipeline tvPipeline{tvDevice, "shaders/simple_shader.vert.spv",
+                        "shaders/simple_shader.frag.spv",
+                        TvPipeline::defaultPipelineConfigInfo(WIDTH, HEIGHT)};
 };
 
 } // namespace tv

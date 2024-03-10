@@ -26,6 +26,8 @@ public:
 
   bool shouldClose() { return glfwWindowShouldClose(m_window.get()); }
 
+  void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);
+
 private:
   void initWindow();
 
