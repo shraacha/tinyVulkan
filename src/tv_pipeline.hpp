@@ -10,14 +10,30 @@
 
 namespace tv {
 
-struct PipelineConfigInfo {};
+struct PipelineConfigInfo {
+  VkViewport viewport;
+  VkRect2D scissor;
+  VkPipelineViewportStateCreateInfo viewportInfo;
+  VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
+  VkPipelineRasterizationStateCreateInfo rasterizationInfo;
+  VkPipelineMultisampleStateCreateInfo multisampleInfo;
+  VkPipelineColorBlendAttachmentState colorBlendAttachment;
+  VkPipelineColorBlendStateCreateInfo colorBlendInfo;
+  VkPipelineDepthStencilStateCreateInfo depthStencilInfo;
+
+  // no default provided for the following
+  VkPipelineLayout pipelineLayout = nullptr;
+  VkRenderPass renderPass = nullptr;
+  uint32_t subpass = 0;
+};
+
 class TvPipeline {
 public:
   TvPipeline(TvDevice &device, const std::string &vertFilepath,
              const std::string &fragFilepath,
              const PipelineConfigInfo &configInfo);
 
-  ~TvPipeline() {}
+  ~TvPipeline();
 
   // deleting copy ctors because we want to prevent copying of ptrs to our
   // vulkan objects
