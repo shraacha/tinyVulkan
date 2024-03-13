@@ -41,6 +41,13 @@ std::vector<char> TvPipeline::readFile(const std::string &filepath) {
   return buffer;
 }
 
+void TvPipeline::bind(VkCommandBuffer commandBuffer) {
+  // no checks on m_graphicsPipeline bc it must have been constructed properly
+  // at instantiation
+  vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                    m_graphicsPipeline);
+}
+
 PipelineConfigInfo TvPipeline::defaultPipelineConfigInfo(uint32_t width,
                                                          uint32_t height) {
   PipelineConfigInfo configInfo{};
@@ -63,14 +70,6 @@ PipelineConfigInfo TvPipeline::defaultPipelineConfigInfo(uint32_t width,
   // Discarding things outside of the scissor.
   configInfo.scissor.offset = {0, 0};
   configInfo.scissor.extent = {width, height};
-
-  // Some graphics cards allow for multiple viewports and scissors.
-  configInfo.viewportInfo.sType =
-      VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-  configInfo.viewportInfo.viewportCount = 1;
-  configInfo.viewportInfo.pViewports = &configInfo.viewport;
-  configInfo.viewportInfo.scissorCount = 1;
-  configInfo.viewportInfo.pScissors = &configInfo.scissor;
 
   // ~ rasterization ~
   configInfo.rasterizationInfo.sType =
@@ -180,15 +179,27 @@ void TvPipeline::createGraphicsPipeline(const std::string &vertFilepath,
   vertexInputInfo.pVertexAttributeDescriptions = nullptr;
   vertexInputInfo.pVertexBindingDescriptions = nullptr;
 
+  // Some graphics cards allow for multiple viewports and scissors.
+  // Note, this is not a member of PipelineConfigInfo since it needs pointers to
+  // the viewport and the scissor, which would make copies hold ptrs to the old
+  // config.
+  VkPipelineViewportStateCreateInfo
+      viewportInfo{}; // value initializing (important)
+  viewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+  viewportInfo.viewportCount = 1;
+  viewportInfo.pViewports = &configInfo.viewport;
+  viewportInfo.scissorCount = 1;
+  viewportInfo.pScissors = &configInfo.scissor;
+
   // Finally... creating our pipeline!
   VkGraphicsPipelineCreateInfo pipelineInfo{};
   pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
   pipelineInfo.stageCount =
-      2; // number of /programmable/ stages the pipeline woill use
+      2; // number of /programmable/ stages the pipeline will use
   pipelineInfo.pStages = shaderStages;
   pipelineInfo.pVertexInputState = &vertexInputInfo;
   pipelineInfo.pInputAssemblyState = &configInfo.inputAssemblyInfo;
-  pipelineInfo.pViewportState = &configInfo.viewportInfo;
+  pipelineInfo.pViewportState = &viewportInfo;
   pipelineInfo.pRasterizationState = &configInfo.rasterizationInfo;
   pipelineInfo.pMultisampleState = &configInfo.multisampleInfo;
   pipelineInfo.pColorBlendState = &configInfo.colorBlendInfo;
